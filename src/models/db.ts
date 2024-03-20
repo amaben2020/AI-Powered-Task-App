@@ -5,10 +5,12 @@ const dbID: string = import.meta.env.VITE_APPWRITE_DB_ID;
 const collectionID: string = import.meta.env.VITE_APPWRITE_COLLECTION_ID;
 
 const createDocument = async (payload: IPayload) => {
+  console.log("payload", payload);
   const res = await databases.createDocument(dbID, collectionID, ID.unique(), {
     ...payload,
   });
 
+  console.log("res", res);
   return res;
 };
 
