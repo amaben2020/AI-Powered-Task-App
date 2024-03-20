@@ -1,18 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createDocument } from "../../models/db";
-import { IPayload } from "../../models/interface";
+import { createDocument, updateDocument } from "../../models/db";
+import { IPayload, ITask } from "../../models/interface";
+import { getTasks } from "../../utils/shared";
 import Button from "../Button";
 import Select from "../Select";
 
-const AddTask = () => {
+interface ITaskFormProps {
+  task: ITask | null;
+  isEdit?: boolean;
+  setTasks?: (tasks: ITask[]) => void;
+}
+
+const AddTask = ({ task, isEdit, setTasks }: ITaskFormProps) => {
   const [titleVal, setTitleVal] = useState("");
   const [textAreaVal, setTextAreaVal] = useState("");
-  const [dueDate, setDueDate] = useState(new Date());
+  const [dueDate, setDueDate] = useState(
+    isEdit && task?.due_date ? new Date(task.due_date) : new Date(),
+  );
 
   const priorityArray = ["low", "medium", "high"];
+  const [priority, setPriority] = useState(
+    isEdit && task?.priority ? task?.priority : priorityArray[0],
+  );
 
-  const [priority, setPriority] = useState(priorityArray[0]);
+  //paste below useState statements
+  useEffect(() => {
+    if (isEdit && task) {
+      setTitleVal(task.title);
+      setTextAreaVal(task.description);
+    } else {
+      setTitleVal("");
+    }
+  }, [isEdit, task]);
 
   //paste here
   const navigate = useNavigate();
@@ -55,8 +75,14 @@ const AddTask = () => {
         due_date: dueDate,
         priority: priority,
       };
-      console.log(payload);
-      await createDocument(payload);
+
+      if (isEdit && task) {
+        await updateDocument(payload, task!.$id);
+        const allTasks = await getTasks();
+        if (setTasks) return setTasks(allTasks.reverse());
+      } else {
+        await createDocument(payload);
+      }
 
       // reset form
       setTitleVal("");
@@ -142,7 +168,9 @@ const AddTask = () => {
         disable={isSubmitting}
         extraBtnClasses="bg-primary justify-center text-white font-semibold px-4 py-2 outline-1 hover:bg-primaryHover focus:ring-1 focus:ring-pink-800 w-full"
       >
-        <span>Add Task</span>
+        <span>
+          {isSubmitting ? "Submitting..." : task ? "Edit Task" : "Add Task"}
+        </span>
       </Button>
     </form>
   );
