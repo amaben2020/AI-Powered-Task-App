@@ -1,12 +1,15 @@
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "regenerator-runtime/runtime";
+import { useSpeechToTextHelper } from "../../hooks/useSpeechToTextHelper";
 import { createDocument, updateDocument } from "../../models/db";
 import { IPayload, ITask } from "../../models/interface";
 import { callAI } from "../../utils/ai";
 import { getTasks } from "../../utils/shared";
 import Button from "../Button";
 import Select from "../Select";
+import Speaker from "../Speaker/Speaker";
 
 interface ITaskFormProps {
   task: ITask | null;
@@ -22,6 +25,7 @@ const AddTask = ({ task, isEdit, setTasks }: ITaskFormProps) => {
     isEdit && task?.due_date ? new Date(task.due_date) : new Date(),
   );
 
+  const { transcript, resetTranscript } = useSpeechToTextHelper();
   const priorityArray = ["low", "medium", "high"];
   const [priority, setPriority] = useState(
     isEdit && task?.priority ? task?.priority : priorityArray[0],
@@ -29,13 +33,13 @@ const AddTask = ({ task, isEdit, setTasks }: ITaskFormProps) => {
 
   //paste below useState statements
   useEffect(() => {
-    if (isEdit && task) {
+    if (isEdit && task && !transcript) {
       setTitleVal(task.title);
       setTextAreaVal(task.description);
     } else {
-      setTitleVal("");
+      setTitleVal(transcript || "");
     }
-  }, [isEdit, task]);
+  }, [isEdit, task, transcript]);
 
   //paste here
   const navigate = useNavigate();
@@ -49,6 +53,11 @@ const AddTask = ({ task, isEdit, setTasks }: ITaskFormProps) => {
     if (e.target.value.trim() !== "") {
       setTitleValidationError("");
     }
+  };
+
+  //paste here
+  const clearTranscript = () => {
+    resetTranscript();
   };
 
   const handleSubmitTask = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -133,7 +142,10 @@ const AddTask = ({ task, isEdit, setTasks }: ITaskFormProps) => {
   return (
     <form id="form" onSubmit={handleSubmitTask} className="m-8">
       <div className="flex flex-col mb-6">
-        <label htmlFor="title">Task Title</label>
+        <div className="flex flex-row items-center justify-between">
+          <label htmlFor="title">Task Title</label>
+          <Speaker handleClear={clearTranscript} />
+        </div>
         <input
           type="text"
           id="title"
