@@ -1,17 +1,20 @@
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { ReactNode, useState } from "react";
+import { ITask } from "../../models/interface";
 import Button from "../Button";
 
 interface DialogProps {
   setIsViewTask?: (isViewTask: boolean) => void;
+  setSearchedTasks?: (tasks: ITask[]) => void;
   children: ReactNode;
 }
 
-function Dialog({ setIsViewTask, children }: DialogProps) {
+function Dialog({ setIsViewTask, children, setSearchedTasks }: DialogProps) {
   const [isOpen, setIsOpen] = useState(true);
 
   const closeModal = () => {
     if (setIsViewTask) setIsViewTask(false);
+    if (setSearchedTasks) setSearchedTasks([]);
     setIsOpen(false);
   };
   return (
