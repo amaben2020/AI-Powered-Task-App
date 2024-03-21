@@ -9,7 +9,7 @@ import Button from "../Button";
 interface TaskItemProps {
   task: ITask;
   setTasks?: (tasks: ITask[]) => void;
-  handleViewTask: any;
+  handleViewTask: () => void;
   isViewTask: boolean;
 }
 
@@ -40,9 +40,15 @@ function TaskItem({
     e: React.MouseEvent<HTMLButtonElement>,
     currentTaskId: string,
   ) => {
+    e.stopPropagation();
     try {
       await deleteDocument(currentTaskId);
-      updateTasks();
+      if (isViewTask) {
+        // FORCES THE UI TO UPDATE TO THE PROPER STATE
+        navigate(0);
+      } else {
+        updateTasks();
+      }
     } catch (error) {
       console.error(error);
     }

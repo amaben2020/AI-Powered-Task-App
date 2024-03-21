@@ -8,13 +8,10 @@ const Task = () => {
   const [tasks, setTasks] = useState<ITask[]>([]);
   const [tasksError, setTasksError] = useState("");
 
-  const [isViewTask, setIsViewTask] = useState(false);
+  const [isViewTask, setIsViewTask] = useState(true);
   const [selectedTask, setSelectedTask] = useState<ITask>();
 
-  const handleViewTask = (
-    e: React.MouseEvent<HTMLDivElement>,
-    activeTask: ITask,
-  ) => {
+  const handleViewTask = (activeTask: ITask) => {
     setIsViewTask(true);
     setSelectedTask(activeTask);
   };
