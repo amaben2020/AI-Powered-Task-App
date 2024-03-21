@@ -1,12 +1,10 @@
 import { PencilIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Button from "../Button/index";
 import Select from "../Select";
 
 const Navbar = () => {
-  const navigate = useNavigate();
-
   const themeArray = ["light", "dark", "system"];
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("theme") || themeArray[2];
