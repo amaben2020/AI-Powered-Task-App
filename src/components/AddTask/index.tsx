@@ -1,7 +1,9 @@
+import { SparklesIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createDocument, updateDocument } from "../../models/db";
 import { IPayload, ITask } from "../../models/interface";
+import { callAI } from "../../utils/ai";
 import { getTasks } from "../../utils/shared";
 import Button from "../Button";
 import Select from "../Select";
@@ -13,6 +15,7 @@ interface ITaskFormProps {
 }
 
 const AddTask = ({ task, isEdit, setTasks }: ITaskFormProps) => {
+  const [isGenerating, setIsGenerating] = useState(false);
   const [titleVal, setTitleVal] = useState("");
   const [textAreaVal, setTextAreaVal] = useState("");
   const [dueDate, setDueDate] = useState(
@@ -98,6 +101,35 @@ const AddTask = ({ task, isEdit, setTasks }: ITaskFormProps) => {
     }
   };
 
+  const generateDesc = async () => {
+    setTextAreaVal("");
+
+    if (!titleVal) {
+      alert("Please provide a title for the task");
+      return;
+    }
+
+    setIsGenerating(true);
+
+    const prompt = `Provide a description for this task: ${titleVal}. Keep the description to a maximum of 30 words`;
+
+    try {
+      const res = await callAI(prompt);
+      const responseText = await res.text();
+
+      setIsGenerating(false);
+
+      //create a typing effect
+      responseText.split("").forEach((char, index) => {
+        setTimeout(() => {
+          setTextAreaVal((prevText) => prevText + char);
+        }, index * 32);
+      });
+    } catch (error) {
+      console.log("ERROR HUGGING FACE API: " + error);
+    }
+  };
+
   return (
     <form id="form" onSubmit={handleSubmitTask} className="m-8">
       <div className="flex flex-col mb-6">
@@ -126,11 +158,11 @@ const AddTask = ({ task, isEdit, setTasks }: ITaskFormProps) => {
           id="description"
           placeholder="Describe your task"
           maxLength={200}
-          value={textAreaVal}
+          value={isGenerating ? "generating..." : textAreaVal}
           onChange={(e) => setTextAreaVal(e.target.value)}
-          className={`bg-inherit border rounded-sm p-2 h-32 resize-none 							focus:outline-none focus:ring-1 ${
+          className={`bg-inherit border rounded-sm p-2 h-32 resize-none 		 focus:outline-none focus:ring-1 ${
             textAreaVal.length > 197
-              ? "border-error focus:ring-red-500 invalid:focus:ring-							 red-600"
+              ? "border-error focus:ring-red-500 invalid:focus:ring-red-600"
               : "border-input focus:ring-slate-900"
           }`}
         />
@@ -139,6 +171,15 @@ const AddTask = ({ task, isEdit, setTasks }: ITaskFormProps) => {
             Warning description getting too long. Can only be 200 characters
           </span>
         )}
+
+        <Button
+          handleClick={generateDesc}
+          disable={isGenerating}
+          extraBtnClasses="bg-light mt-2 w-fit ml-auto"
+        >
+          <span>Generate description</span>
+          <SparklesIcon height={20} />
+        </Button>
       </div>
       <div className="flex flex-col mb-6">
         <label htmlFor="description" className="mb-1">
