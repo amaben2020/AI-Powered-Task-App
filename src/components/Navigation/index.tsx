@@ -15,7 +15,10 @@ const Navbar = () => {
       "(prefers-color-scheme: dark)",
     ).matches;
 
+    // defaults to system
     document.documentElement.classList.remove("light", "dark");
+
+    // toggled
     document.documentElement.classList.add(selectedTheme);
 
     if (selectedTheme === "system") {
